@@ -1,0 +1,259 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Mood Selector</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 30px;
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .emoji-button {
+            background: #f0f0f0;
+            border: none;
+            border-radius: 15px;
+            padding: 20px;
+            font-size: 60px;
+            cursor: pointer;
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+
+        .emoji-button:hover {
+            transform: scale(1.1);
+            background: #e0e0e0;
+        }
+
+        #chat-page {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%);
+        }
+
+        .chat-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            background: #a8e6cf;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .ai-message {
+            background: #dcedc1;
+            align-self: flex-start;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
+
+        .chat-input button {
+            padding: 10px 20px;
+            background: #a8e6cf;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="emoji-selector">
+        <h2>How are you feeling today?</h2>
+        <div class="emoji-grid">
+            <button class="emoji-button" data-mood="happy">😊</button>
+            <button class="emoji-button" data-mood="sad">😢</button>
+            <button class="emoji-button" data-mood="excited">🤩</button>
+            <button class="emoji-button" data-mood="love">❤️</button>
+            <button class="emoji-button" data-mood="calm">😌</button>
+            <button class="emoji-button" data-mood="surprised">😮</button>
+        </div>
+    </div>
+
+    <div id="chat-page">
+        <div class="chat-container">
+            <div class="chat-header">
+                <h2 id="mood-title">Mood Chat</h2>
+                <button id="back-button">← Back</button>
+            </div>
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-input">
+                <input type="text" id="message-input" placeholder="Type your message...">
+                <button id="send-button">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Emoji Selection Logic
+        const emojiButtons = document.querySelectorAll('.emoji-button');
+        const emojiSelector = document.getElementById('emoji-selector');
+        const chatPage = document.getElementById('chat-page');
+        const moodTitle = document.getElementById('mood-title');
+        const backButton = document.getElementById('back-button');
+        const chatMessages = document.getElementById('chat-messages');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+
+        // Predefined AI responses based on mood
+        const aiResponses = {
+            happy: [
+                "It's wonderful that you're feeling happy! What's making you smile today?",
+                "Happiness is contagious! Tell me more about your joy.",
+                "Your positive energy is amazing! What brought you this happiness?"
+            ],
+            sad: [
+                "I'm here to listen. Would you like to talk about what's making you feel sad?",
+                "It's okay to feel sad sometimes. Would you like to share what's troubling you?",
+                "Emotions are valid. I'm here to support you through this moment."
+            ],
+            excited: [
+                "Your excitement is infectious! What's got you so thrilled?",
+                "Wow, sounds like something amazing is happening! Tell me more!",
+                "I love your enthusiasm! What's the source of your excitement?"
+            ],
+            love: [
+                "Love is a beautiful feeling! Would you like to share what's filling your heart?",
+                "Love can be magical. Tell me about what's making you feel this way.",
+                "Feeling loved is one of life's greatest gifts. What's sparking this emotion?"
+            ],
+            calm: [
+                "It's wonderful to be in a peaceful state of mind. How are you maintaining your calm?",
+                "Serenity is a beautiful state of being. What helps you feel this way?",
+                "Peaceful moments are precious. Would you like to reflect on what's bringing you calm?"
+            ],
+            surprised: [
+                "Surprises can be exciting! What unexpected thing just happened?",
+                "Tell me about what's caught you off guard and surprised you!",
+                "Unexpected moments can be thrilling. I'd love to hear about your surprise."
+            ]
+        };
+
+        emojiButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const mood = button.getAttribute('data-mood');
+                emojiSelector.style.display = 'none';
+                chatPage.style.display = 'block';
+                
+                // Set mood title
+                moodTitle.textContent = `${mood.charAt(0).toUpperCase() + mood.slice(1)} Mood Chat`;
+                
+                // Initial AI message
+                addMessage('ai', getRandomResponse(mood));
+            });
+        });
+
+        backButton.addEventListener('click', () => {
+            chatPage.style.display = 'none';
+            emojiSelector.style.display = 'block';
+            chatMessages.innerHTML = ''; // Clear previous chat
+        });
+
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message) {
+                // User message
+                addMessage('user', message);
+                
+                // AI response (simulated)
+                setTimeout(() => {
+                    const currentMood = moodTitle.textContent.split(' ')[0].toLowerCase();
+                    addMessage('ai', getRandomResponse(currentMood));
+                }, 1000);
+                
+                messageInput.value = ''; // Clear input
+            }
+        }
+
+        function addMessage(sender, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', `${sender}-message`);
+            messageDiv.textContent = text;
+            chatMessages.appendChild(messageDiv);
+            
+            // Auto scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function getRandomResponse(mood) {
+            const responses = aiResponses[mood];
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+    </script>
+</body>
+</html>
