@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request,jsonify
 
 app = Flask(__name__)
+API_KEY = "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"
+
 
 @app.route('/')
 def home():
@@ -40,7 +42,39 @@ def login():
 def fun():
     return render_template('g.html')
 
+@app.route('/chat')
+def chat_page():
+    return render_template('g.html')
 
+# New API Example: Using API Key for Authorization
+@app.route('/api/send-message', methods=['POST'])
+def send_message():
+    # Get the API key from headers
+    provided_api_key = request.headers.get('X-API-Key')
+    
+    # Check if the API key is valid
+    if provided_api_key != API_KEY:
+        return jsonify({
+            'success': False,
+            'message': 'Invalid API Key'
+        }), 403
+    
+    # Get the message from request data
+    data = request.get_json()
+    message = data.get('message')
+    
+    if not message:
+        return jsonify({
+            'success': False,
+            'message': 'Message content is required'
+        }), 400
+    
+    # Process the message (e.g., store in a database, broadcast, etc.)
+    return jsonify({
+        'success': True,
+        'message': 'Message received',
+        'data': message
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)
