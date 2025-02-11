@@ -16,9 +16,11 @@ Features
 
 Tech Stack
 
-Frontend: React.js, Tailwind CSS
+Frontend:  HTML, CSS, JavaScript
 
-Backend: Flask/Django
+Backend: Python, Flask
+
+ 
 
 Database: Firebase Firestore
 
